@@ -1,7 +1,7 @@
 'use strict';
 const { Model, DataTypes } = require('sequelize');
 const bcrypt = require('bcryptjs');
-const Course = require('./course')
+//const Course = require('./course')
 
 
 module.exports = (sequelize) => {
@@ -31,6 +31,19 @@ module.exports = (sequelize) => {
         }
       }
     },
+    emailAddress: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+       isEmail: true,
+      },
+      notNull: {
+        msg: 'An email is required'
+      },
+      notEmpty: {
+        msg: 'Please provide an email address'
+      },
+},
     password: {
       type: DataTypes.VIRTUAL,  
       allowNull: false,
@@ -47,37 +60,23 @@ module.exports = (sequelize) => {
         }
       }
     },
-    confirmedPassword: {
-      type: DataTypes.STRING,
-      allowNull: false,
       set(val) {
-        if ( val === this.password ) {
           const hashedPassword = bcrypt.hashSync(val, 10);
           this.setDataValue('confirmedPassword', hashedPassword);
-        }
+        },
       },
-      validate: {
-        notNull: {
-          msg: 'Both passwords must match'
-        }
-      }
-    },
-    emailAddress: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-         isEmail: true,
-        },
-        notNull: {
-          msg: 'An email is required'
-        },
-        notEmpty: {
-          msg: 'Please provide an email address'
-        },
-  },
- }, { sequelize });
+  { sequelize }
+ );
 
- User.hasMany(Course, { as:'courses', foreignKey: 'userId'})
+ 
+ User.associate = (models) => {
+  User.hasMany(models.Course, {
+    as: 'courses',
+    foreignKey: { fieldName: 'userId'},
+  });
+};
+
+ //User.hasMany(Course, { as:'courses', foreignKey: 'userId'})
 
   return User;
 };
