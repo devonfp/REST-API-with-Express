@@ -1,6 +1,8 @@
 'use strict';
 const { Model, DataTypes } = require('sequelize');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
+const Course = require('./course')
+
 
 module.exports = (sequelize) => {
   class User extends Model {}
@@ -60,7 +62,7 @@ module.exports = (sequelize) => {
         }
       }
     },
-    emailAdress: {
+    emailAddress: {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
@@ -79,3 +81,4 @@ module.exports = (sequelize) => {
 
   return User;
 };
+
