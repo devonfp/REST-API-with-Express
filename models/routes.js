@@ -9,18 +9,18 @@ const { authenticateUser } = require('../middleware/auth-user');
 // Construct a router instance.
 const router = express.Router();
 
+
 // Route that returns(gets) a list of users.
-router.get('/api/users', authenticateUser, asyncHandler(async (req, res) => {
-  const user = req.currentUser;
-  res.json({
-    name: user.name,
-    username: user.username
-  });
-  res.status(200).json
+router.get('/users', authenticateUser, asyncHandler(async (req, res) => {
+const user = req.currentUser;
+res.status(200).json({
+  name: user.name,
+  username: user.username
+});
 }));
 
 // Route that creates(posts) a new user.
-router.post('/api/users', asyncHandler(async (req, res) => {
+router.post('/users', asyncHandler(async (req, res) => {
       await User.create(req.body);
       res.location('/');
       res.status(201).json({ "message": "Account successfully created!" });
@@ -28,13 +28,13 @@ router.post('/api/users', asyncHandler(async (req, res) => {
 
 
   // Route that returns(gets) a list of courses.
-router.get('/api/courses', asyncHandler(async (req, res) => {  
+router.get('/courses', asyncHandler(async (req, res) => {  
  const courses = await Course.find().populate('user');
  res.status(200).json(courses);
 }));
 
 // Route that creates(posts) a new course.
-router.post('/api/courses/', authenticateUser, asyncHandler(async (req, res) => {  
+router.post('/courses/', authenticateUser, asyncHandler(async (req, res) => {  
     const course = await Course.create(req.body);
     res.location(`/api/courses/${course.id}`);
     res.status(201).end();
@@ -43,7 +43,7 @@ router.post('/api/courses/', authenticateUser, asyncHandler(async (req, res) => 
 
 // Route that returns(gets) a specific course.
 //Code from Github Co-Pilot
-router.get('/api/courses/:id', asyncHandler(async (req, res) => {  
+router.get('/courses/:id', asyncHandler(async (req, res) => {  
   const course = await Course.findById(req.params.id).populate('user');
   if (course) {
     res.status(200).json(course);
@@ -53,7 +53,7 @@ router.get('/api/courses/:id', asyncHandler(async (req, res) => {
 }));
 
 // Route that updates a specific course.
-router.put('/api/courses/:id', authenticateUser, asyncHandler(async (req, res) => {  
+router.put('/courses/:id', authenticateUser, asyncHandler(async (req, res) => {  
     const courseId = req.params.id;
     const course = await Course.findById(courseId);
 
@@ -66,7 +66,7 @@ router.put('/api/courses/:id', authenticateUser, asyncHandler(async (req, res) =
    }));   
 
 
-router.delete('/api/courses/:id', authenticateUser, asyncHandler(async (req, res) => {  
+router.delete('/courses/:id', authenticateUser, asyncHandler(async (req, res) => {  
   const courseId = req.params.id;
   const course = await Course.findById(courseId);
   
