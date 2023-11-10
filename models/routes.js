@@ -14,8 +14,8 @@ const router = express.Router();
 router.get('/users', authenticateUser, asyncHandler(async (req, res) => {
 const user = req.currentUser;
 res.status(200).json({
-  name: user.name,
-  username: user.username
+  name: user.firstName + ' ' + user.lastName,
+  username: user.emailAddress
 });
 }));
 
