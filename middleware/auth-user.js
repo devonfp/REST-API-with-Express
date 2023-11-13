@@ -1,7 +1,7 @@
 'use strict';
 
 const auth = require('basic-auth');
-const { User } = require('../models/users.js');
+const { User } = require('../models/');
 const bcrypt = require('bcryptjs');
 
 /**
