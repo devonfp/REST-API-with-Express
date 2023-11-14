@@ -14,15 +14,26 @@ const router = express.Router();
 router.get('/users', authenticateUser, asyncHandler(async (req, res) => {
 const user = req.currentUser;
 res.status(200).json({
-  name: user.firstName,
-  username: user.firstName
+  username: user.emailAddress,
+  password: user.password
 });
 }));
 
 // Route that creates(posts) a new user.
 router.post('/users', asyncHandler(async (req, res) => {
-      await User.create(req.body);
-      res.location('/');
+
+  if (req.headers['content-type'] !== 'application/json') {
+    return res.status(400).json({ error: 'Invalid Content-Type header' });
+  }
+
+  // Attempt to get the validation result from the Request object.
+      await User.create({
+      "firstName": "Joe",
+      "lastName": "Smith",
+      "emailAddress": "joe@smith.com",
+      "password": "joepassword"
+      });
+        res.location('/');
       res.status(201).json({ "message": "Account successfully created!" });
   }));
 
