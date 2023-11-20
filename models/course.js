@@ -32,17 +32,17 @@ module.exports = (sequelize) => {
       }
     },
     estimatedTime: {
-      type: DataTypes.VIRTUAL,  
+      type: DataTypes.STRING,  
       allowNull: false,
     },
     materialsNeeded: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-/*    userId: {
+   userId: {
         type: DataTypes.STRING,
         allowNull: false,
-  },*/
+  },
  }, { sequelize });
 
   Course.associate = (models) => {

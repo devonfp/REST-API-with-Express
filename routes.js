@@ -22,16 +22,13 @@ res.status(200).json({
 // Route that creates(posts) a new user.
 router.post('/users', asyncHandler(async (req, res) => {
 
-  if (req.headers['content-type'] !== 'application/json') {
-    return res.status(400).json({ error: 'Invalid Content-Type header' });
-  }
-
-  // Attempt to get the validation result from the Request object.
+  // Attempts to get the validation result from the Request object.
+  // Code from Github Co-Pilot
       await User.create({
-      "firstName": "Joe",
-      "lastName": "Smith",
-      "emailAddress": "joe@smith.com",
-      "password": "joepassword"
+      "firstName": "req.body.firstName",
+      "lastName": "req.body.lastName",
+      "emailAddress": "req.body.emailAddress",
+      "password": "req.body.password"
       });
         res.location('/');
       res.status(201).json({ "message": "Account successfully created!" });
@@ -39,37 +36,61 @@ router.post('/users', asyncHandler(async (req, res) => {
 
 
   // Route that returns(gets) a list of courses.
-router.get('/courses', asyncHandler(async (req, res) => {  
- const courses = await Course.find().populate('user');
- res.status(200).json(courses);
-}));
+  //Code from Github Co-Pilot
+  router.get('/courses', asyncHandler(async (req, res) => {  
+    const courses = await Course.findAll({
+      include: {
+        model: User,
+        as: 'user',
+        attributes: ['id', 'firstName', 'lastName', 'emailAddress']
+      },
+      attributes: ['id', 'title', 'description', 'estimatedTime', 'materialsNeeded']
+    });
+    res.status(200).json(courses);
+  }));
+
 
 // Route that creates(posts) a new course.
-router.post('/courses/', authenticateUser, asyncHandler(async (req, res) => {  
-    const course = await Course.create(req.body);
-    res.location(`/api/courses/${course.id}`);
+router.post('/courses', authenticateUser, asyncHandler(async (req, res) => {  
+    const course = await Course.create({
+      "title": "req.body.title",
+      "description": "req.body.description",
+      "userId": 1,
+      'estimatedTime': 'req.body.estimatedTime',  
+      'materialsNeeded': 'req.body.materialsNeeded'
+      });
+    res.location(`/courses/${course.id}`);
     res.status(201).end();
    }));
 
 
 // Route that returns(gets) a specific course.
-//Code from Github Co-Pilot
 router.get('/courses/:id', asyncHandler(async (req, res) => {  
-  const course = await Course.findById(req.params.id).populate('user');
-  if (course) {
-    res.status(200).json(course);
-  } else {
-    res.status(404).json({message: "Course not found"});
-  }
+  const course = await Course.findByPk(req.params.id, {
+  include: {
+    model: User,
+    as: 'user',
+    attributes: ['id', 'firstName', 'lastName', 'emailAddress']
+  },
+  attributes: ['id', 'title', 'description', 'estimatedTime', 'materialsNeeded']
+});
+res.status(200).json(course);
 }));
 
 // Route that updates a specific course.
 router.put('/courses/:id', authenticateUser, asyncHandler(async (req, res) => {  
     const courseId = req.params.id;
-    const course = await Course.findById(courseId);
+    const course = await Course.findByPk(courseId);
 
     if (course) {
-     await course.update(req.body);
+     await course.update({
+      include: {
+        model: User,
+        as: 'user',
+        attributes: ['id', 'firstName', 'lastName', 'emailAddress']
+      },
+      attributes: ['id', 'title', 'description', 'estimatedTime', 'materialsNeeded']
+     });
      res.status(204).end();
     } else {
       res.status(404).json({message: "Course not found"});
@@ -79,7 +100,7 @@ router.put('/courses/:id', authenticateUser, asyncHandler(async (req, res) => {
 
 router.delete('/courses/:id', authenticateUser, asyncHandler(async (req, res) => {  
   const courseId = req.params.id;
-  const course = await Course.findById(courseId);
+  const course = await Course.findByPk(courseId);
   
   if (course) {
      // Delete the course
