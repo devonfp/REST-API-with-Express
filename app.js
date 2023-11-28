@@ -4,6 +4,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const routes = require('./routes');
+const { sequelize } = require('./models');
 //const bodyParser = require('body-parser');
 
 
@@ -18,6 +19,9 @@ app.use(morgan('dev'));
 
 // Parse JSON request bodies
 //app.use(bodyParser.json());
+
+// Middleware to parse JSON request bodies
+app.use(express.json());
 
 // setup a friendly greeting for the root route
 app.get('/', (req, res) => {
@@ -51,6 +55,16 @@ app.use((err, req, res, next) => {
 
 // set our port
 app.set('port', process.env.PORT || 5000);
+
+// Test the database connection.
+(async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('Connection has been established successfully.');
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+  }
+})();
 
 // start listening on our port
 const server = app.listen(app.get('port'), () => {
