@@ -14,6 +14,7 @@ const router = express.Router();
 router.get('/users', authenticateUser, asyncHandler(async (req, res) => {
 const user = req.currentUser;
 res.status(200).json({
+  userId: user.id,
   firstName: user.firstName,
   lastName: user.lastName,
   username: user.emailAddress,
@@ -22,15 +23,25 @@ res.status(200).json({
 }));
 
 // Route that creates(posts) a new user.
-router.post('/users', asyncHandler(async (req, res) => {
+router.post('/users', asyncHandler(async (req, res, next) => {
   // Attempts to get the validation result from the Request object.
   // Code from Github Co-Pilot
+  try {
   await User.create({
-    firstName: 'Joe',
+    firstName: 'Sam',
     lastName: 'Smith',
-    emailAddress: 'joe@smith.com',
-    password: 'joepassword'
+    emailAddress: 'sam.com',
+    password: 'sampassword'
   });
+} catch (error) {
+if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+    const errors = error.errors.map(err => err.message);
+    res.status(400).json({ errors }); 
+   }  else {
+    next(error)
+   }
+   }
+  
   res.location('/');
   res.status(201).end();
 }));
@@ -53,17 +64,26 @@ router.post('/users', asyncHandler(async (req, res) => {
 
 // Route that creates(posts) a new course.
 router.post('/courses', authenticateUser, asyncHandler(async (req, res) => {  
-  const course = await Course.create({
-    userId: 1,
-    title: "Debugging 101",
-    description: "An introduction to testing and debugging your code.",
-    estimatedTime: "4 hours",
-    materialsNeeded: "* Notebook computer running Mac OS X or Windows\n* Text editor"
-  });
-
+  try {
+    const course = await Course.create({
+      userId: 1,
+      title: "Debugging 101",
+      description: "An introduction to testing and debugging your code.",
+      estimatedTime: "4 hours",
+      materialsNeeded: "* Notebook computer running Mac OS X or Windows\n* Text editor"
+    });
     res.location(`/courses/${course.id}`);
     res.status(201).end();
+  } catch (error) {
+    if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+      const errors = error.errors.map(err => err.message);
+      res.status(400).json({ errors });
+    } else {
+      next(error)
+    }
+  }
 }));
+
 
 
 // Route that returns(gets) a specific course.
@@ -76,30 +96,28 @@ router.get('/courses/:id', asyncHandler(async (req, res) => {
   },
   attributes: ['id', 'title', 'description', 'estimatedTime', 'materialsNeeded']
 });
-res.status(200).json(course);
+res.status(200).end();
 }));
 
 // Route that updates a specific course.
-router.put('/courses/:id', authenticateUser, asyncHandler(async (req, res) => {  
-    const courseId = req.params.id;
-    const course = await Course.findByPk(courseId);
-
-    if (course) {
-     await course.update({
-        title: "Updated course!",
-        description: "The course description has been updated as well.",
-     });
-     
-    // Check if required values are present in the request body
-    if (!title || !description) {
-      res.status(400).json({ errors: ['Title and description are required'] });
-      return;
-    }
-     res.status(204).end();
+router.put('/courses/:id', authenticateUser, asyncHandler(async (req, res, next) => {
+  try {
+    // Code from askCodi
+    const user = req.currentUser;
+    const course = await Course.findByPk(req.params.id);
+        // Update the course attributes with new values from the request body
+        await course.update(req.body);
+        res.status(204).end();
+      }  catch (error) {
+    if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+      const errors = error.errors.map(err => err.message);
+      res.status(400).json({ errors });
     } else {
-      res.status(404).json({message: "Course not found"});
+      next(error);
     }
-   }));   
+  }
+}));
+
 
 
 router.delete('/courses/:id', authenticateUser, asyncHandler(async (req, res) => {  
