@@ -29,24 +29,16 @@ router.post('/users', asyncHandler(async (req, res, next) => {
  
   try {
     const newUser = await User.create(req.body);
-    res.status(201).json({
-      userId: newUser.id,
-      firstName: newUser.firstName,
-      lastName: newUser.lastName,
-      username: newUser.emailAddress, 
-      password: newUser.password
-  });
-
+    res.location(`/users/${newUser.id}`);
+    res.status(201).end();
 } catch (error) {
 if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
     const errors = error.errors.map(err => err.message);
     res.status(400).json({ errors }); 
    }  else {
     next(error)
+  }
    }
-   }
-  res.location('/');
-  res.status(201).end();
 }));
 
 
@@ -69,14 +61,8 @@ if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUnique
 router.post('/courses', authenticateUser, asyncHandler(async (req, res, next) => {  
   try {
     const newCourse = await Course.create(req.body);
-    res.status(201).json({
-      userId: newCourse.id,
-      title: newCourse.title,
-      description: newCourse.description,
-      estimatedTime: newCourse.estimatedTime,
-      materialsNeeded: newCourse.materialsNeeded
-    });
-    
+    res.location(`/courses/${newCourse.id}`);
+    res.status(201).end();
   } catch (error) {
     if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
       const errors = error.errors.map(err => err.message);
@@ -85,8 +71,6 @@ router.post('/courses', authenticateUser, asyncHandler(async (req, res, next) =>
       next(error)
     }
   }
-  res.location(`/courses/${Course.id}`);
-  res.status(201).end();
 }));
 
 
