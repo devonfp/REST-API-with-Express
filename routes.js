@@ -26,10 +26,9 @@ res.status(200).json({
 router.post('/users', asyncHandler(async (req, res, next) => {
   // Attempts to get the validation result from the Request object.
   // Code from Github Co-Pilot
- 
   try {
     const newUser = await User.create(req.body);
-    res.location(`/users/${newUser.id}`);
+    res.location(`/`);
     res.status(201).end();
 } catch (error) {
 if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
